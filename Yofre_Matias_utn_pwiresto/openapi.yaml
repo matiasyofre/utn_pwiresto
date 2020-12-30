@@ -1,0 +1,538 @@
+openapi: 3.0.1
+info:
+  title: utn_pwiresto
+  description: API UTN PWI Resto.
+  contact:
+    email: mati_yofre07@hotmail.com
+  version: 1.0.0
+externalDocs:
+  description: Github Repository
+  url: 'https://github.com/matiasyofre/utn_pwiresto'
+servers:
+  - url: 'https://localhost:3306/'
+tags:
+  - name: User
+    description: User - Actions
+  - name: Products
+    description: Products - Actions
+  - name: Orders
+    description: Orders - Actions
+paths:
+  /users:
+    get:
+      tags:
+        - User
+      summary: All users (admin)
+      description: >-
+        Get all users if the request comes from an admin user.
+      operationId: mostrarUsuarios
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized - You dont have permission for this action
+        '404':
+          description: user not found
+        '500':
+          description: Internal Server Error
+    post:
+      tags:
+        - User
+      summary: Create user
+      description: Create a new User
+      operationId: crearCuenta
+      requestBody:
+        description: Object expected
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      security: []
+      responses:
+        '201':
+          description: The user "XXX" was succesfully created
+        '400':
+          description: There are some fields that are empty, remember the fields needed are (userName, fullName, email, phoneNumber, userAddres, password)
+        '409':
+          description: User already exists
+        '500':
+          description: Internal Server Error
+  /users/login:
+    post:
+      tags:
+        - User
+      security: []
+      summary: Login
+      operationId: login
+      requestBody:
+        description: Object expected
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login'
+        required: true
+      responses:
+        '200':
+          description: OK
+        '403':
+          description: The account is disabled
+        '409':
+          description: Invalid username or password
+        '500':
+          description: Internal Server Error
+  /users/admin:
+    post:
+      tags:
+        - User
+      summary: Create admin account
+      operationId: crearAdmin
+      requestBody:
+        description: Object expected
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login'
+        required: true
+      responses:
+        '201':
+          description: The userAdmin "XXX" was succesfully created
+        '400':
+          description: There are some fields that are empty, remember the fields needed are (userName, password)
+        '401':
+          description: Unauthorized - You dont have permission for this action
+        '402':
+          description: You need to be logged to access
+        '404':
+          description: Unauthorized, please add the field authorization with your token in the header
+        '409':
+          description: User already exists
+        '500':
+          description: Internal Server Error
+  /products:
+    get:
+      tags:
+        - Products
+      security: []
+      summary: Get list of all available products
+      description: Available Products
+      operationId: mostrarProductosDisponibles
+      parameters:
+        - name: search
+          in: query
+          description: '-'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+        '402':
+          description: You need to be logged to access
+        '403':
+          description: Unauthorized, please add the field authorization with your token in the header  
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+    post:
+      tags:
+        - Products
+      summary: Add a product (Admin)
+      description: Add a product into the database
+      operationId: agregarProducto
+      requestBody:
+        description: '-'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Products'
+        required: true
+      responses:
+        '200':
+          description: The product "XXX" has been added to the menu
+        '400':
+          description: There are some fields that are empty, remember the fields needed are (name, price, description, img_url, is_active)
+        '401':
+          description: Unauthorized - You dont have permission for this action
+        '402':
+          description: You need to be logged to access
+        '404':
+          description: Unauthorized, please add the field authorization with your token in the header
+        '409':
+          description: The product "XXX" has already exists
+        '500':
+          description: Internal Server Error
+  '/products/{id}':
+    get:
+      tags:
+        - Products
+      summary: Get products by Id
+      description: Returns a specific product
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: '-'
+          schema:
+            type: string
+      operationId: mostrarProductosPorId
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Products'
+        '402':
+          description: You need to be logged to access
+        '403':
+          description: Unauthorized, please add the field authorization with your token in the header
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+    put:
+      tags:
+        - Products
+      summary: Edit products by Id (admin)
+      description: Edit an specific product
+      parameters:
+        - name: id
+          in: path
+          description: '-'
+          required: true
+          schema:
+            type: string
+      operationId: editarProducto
+      requestBody:
+        description: Modification data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Products'
+        required: true
+      responses:
+        '200':
+          description: The product "XXX" was succefully edited
+        '400':
+          description: There are some fields that are empty, remember the fields needed are (name, price, description, urlImg, is_active)
+        '401':
+          description: Unauthorized - You dont have permission for this action
+        '402':
+          description: You need to be logged to access
+        '404':
+          description: Unauthorized, please add the field authorization with your token in the header
+        '409':
+          description: The product you're looking for doesn't exist
+        '500':
+          description: Internal server error
+    delete:
+      tags:
+        - Products
+      summary: Disable products (admin)
+      description: Disable an specific product
+      parameters:
+        - name: id
+          in: path
+          description: '-'
+          required: true
+          schema:
+            type: string
+      operationId: deshabilitarProducto
+      responses:
+        '202':
+          description: the product has been disabled
+        '401':
+          description: You don't have permission for this action
+        '402':
+          description: You need to be logged to access
+        '404':
+          description: Unauthorized, please add the field authorization with your token in the header
+        '409':
+          description: The product you're looking for doesn't exist
+        '500':
+          description: Internal Server Error
+  /products/allproducts:
+    get:
+      tags:
+        - Products
+      security: []
+      summary: Get list of all products (admin)
+      description: All the products
+      operationId: mostrarTodosLosProductos
+      parameters:
+        - name: search
+          in: query
+          description: '-'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: You don't have permission for this action
+        '402':
+          description: You need to be logged to access
+        '404':
+          description: Unauthorized, please add the field authorization with your token in the header
+        '500':
+          description: Internal Server Error
+  /orders:
+    get:
+      tags:
+        - Orders
+      summary: List of orders
+      description: Returns a list of orders
+      operationId: obtenerPedidos
+      responses:
+        '200':
+          description: OK
+        '402':
+          description: You need to be logged to access
+        '404':
+          description: user not found
+        '500':
+          description: Internal Server Error
+    post:
+      tags:
+        - Orders
+      summary: Add a product
+      description: Add a product into the database
+      operationId: crearPedido
+      requestBody:
+        description: Order to create
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewOrder'
+        required: true
+      responses:
+        '201':
+          description: Order created successfully
+        '402':
+          description: You need to be logged to access
+        '404':
+          description: User not found
+        '500':
+          description: Internal Server Error
+  '/orders/{id}':
+    get:
+      tags:
+        - Orders
+      summary: Get an order
+      parameters:
+        - name: id
+          in: path
+          description: '-'
+          required: true
+          schema:
+            type: string
+      description: Returns an specefic order
+      operationId: obtenerPedido
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized - You dont have permission for this action
+        '402':
+          description: You need to be logged to access
+        '404':
+          description: Unauthorized, please add the field authorization with your token in the header
+        '500':
+          description: Internal Server Error
+    put:
+      tags:
+        - Orders
+      summary: Put an order by Id
+      description: Edit an specific order
+      operationId: editarEstadoPedido
+      parameters:
+        - name: id
+          in: path
+          description: '-'
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Order to create
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                order_status:
+                  type: string
+                  example: delivered
+        required: true
+      responses:
+        '202':
+          description: The order was succesfully Edited
+        '401':
+          description: Unauthorized - You dont have permission for this action
+        '402':
+          description: You need to be logged to access
+        '404':
+          description: Unauthorized, please add the field authorization with your token in the header
+        '500':
+          description: Internal Server Error
+    delete:
+      tags:
+        - Orders
+      summary: Delete an order
+      description: Delete an specific order
+      parameters:
+        - name: id
+          in: path
+          description: '-'
+          required: true
+          schema:
+            type: string
+      operationId: borrarPedido
+      responses:
+        '200':
+          description: order succesfully deleted
+        '401':
+          description: Unauthorized - You dont have permission for this action
+        '402':
+          description: You need to be logged to access
+        '404':
+          description: Unauthorized, please add the field authorization with your token in the header
+        '409':
+          description: The order you're looking for doesn't exist
+        '500':
+          description: Internal Server Error
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        username:
+          type: string
+          example: MatiYofre
+        fullname:
+          type: string
+          example: Matías Yofre
+        email:
+          type: string
+          example: mati_yofre07@hotmail.com
+        phoneNumber:
+          type: string
+          example: 3513999999
+        user_address:
+          type: string
+          example: Calle Falsa 123
+        password:
+          type: string
+          example: xxxxxxx
+    Login:
+      type: object
+      properties:
+        username:
+          type: string
+          example: MatiYofre
+        password:
+          type: string
+          example: xxxxxxx
+    Products:
+      type: object
+      properties:
+        name:
+          type: string
+          example: American Burger
+        price:
+          type: integer
+          example: 300
+        description:
+          type: string
+          example: A standard burger
+        img_url:
+          type: string
+          example: >-
+            https://cdn.shortpixel.ai/client/to_webp,q_glossy,ret_img/https://www.recetasdesbieta.com/wp-content/uploads/2018/04/hamburguesas-caseras-1-860x380.jpg
+    OrderProduct:
+      type: object
+      properties:
+        product_id:
+          type: integer
+          example: 2
+        product_amount:
+          type: integer
+          example: 5
+        name:
+          type: string
+          example: Sandwich de vacio
+        price:
+          type: number
+          example: 250
+        img_url:
+          type: string
+          example: >-
+            https://i.pinimg.com/originals/62/ee/94/62ee942864571aa67f980fc3bd773173.jpg
+        description:
+          type: string
+          example: Sandwich de vacio
+    Order:
+      type: object
+      properties:
+        orde_id:
+          type: integer
+          example: 1
+        order_state:
+          type: string
+          example: new
+        order_date:
+          type: string
+          format: date-time
+          example: '2020-08-16 T10:11:12Z'
+        order_description:
+          type: string
+          example: 1x American Burger
+        payment_method:
+          type: string
+          example: cash
+        total:
+          type: integer
+          example: 400
+        user_id:
+          type: integer
+          example: 1
+        username:
+          type: string
+          example: MatiYofre
+        fullname:
+          type: string
+          example: Matias Yofre
+        email:
+          type: string
+          example: mati_yofre07@hotmail.com
+        phoneNumber:
+          type: integer
+          example: 3513999999
+        user_address:
+          type: string
+          example: Calle Falsa 123
+        products:
+          $ref: '#/components/schemas/OrderProduct'
+    NewOrder:
+      type: object
+      properties:
+        payment_method:
+          type: string
+          example: cash
+        products:
+          type: array
+          items:
+            type: object
+            properties:
+              product_id:
+                type: integer
+                example: 1
+              amount:
+                type: integer
+                example: 3
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+security:
+  - BasicAuth: []
